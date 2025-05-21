@@ -461,8 +461,8 @@
           nodes = [
             // Year 1 Q1
             { id: "POLS 133", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
-            { id: "LAW 122", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "MATH 111", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "LAW 122", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "GEN 1.2.1", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
 
             // Year 1 Q2
@@ -476,20 +476,20 @@
             { id: "STAT 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "CSE 106", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
             { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: ""},
-            { id: "CSE 204", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
 
             // Year 2 Q1
             { id: "POLS 132", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
             { id: "GEN 1.4", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "GEN 1.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: ""},
-            { id: "CSN 205", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 204", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
 
             // Year 2 Q2
             { id: "POLS 136", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
             { id: "GEN 1.5.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "COMS 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
             { id: "CSE 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 205", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
 
             // Year 2 Q3
             { id: "PHYS 100", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
@@ -545,8 +545,8 @@
           ];
           links = [links =
             // { source: "Step 4", target: "Step 1", direction: "down-0.2,left-0.3" }, // right = down, up=left
-            { source: "MATH 111", target: "MATH 112", direction: "up-0.3,right" },
-            { source: "MATH 112", target: "STAT 101", direction: "right" },
+            { source: "MATH 111", target: "MATH 112", direction: "right" },
+            { source: "MATH 103", target: "STAT 101", direction: "up-0.2,right" },
             { source: "MATH 103", target: "CSE 106", direction: "right" },
             { source: "CSE 100", target: "CSE 206", direction: "right-0.2,up-0.2, right-3.2" },
             { source: "CSE 100", target: "CSE 103", direction: "right"},
@@ -554,11 +554,11 @@
             { source: "STAT 101", target: "GEN 1.4", direction: "right" },
             { source: "CSE 204", target: "CSN 205", direction: "right"},
             { source: "CSE 204", target: "CSN 302", direction: "down-0.1, right-3.4"},
-            { source: "CSE 204", target: "CSN 303", direction: "down-0.1, right-4.4"},
-            { source: "CSE 204", target: "CSN 305", direction: "down-0.1, right-4.2, up-1.1"},
+            { source: "CSE 204", target: "CSN 303", direction: "down-0.1, right-3.4"},
+            { source: "CSE 204", target: "CSN 305", direction: "down-0.1, right-3.3, up-1.1"},
             { source: "CSN 205", target: "CSN 301", direction: "right-0.2, up-1.3, right-2.2"},
-            { source: "CSN 205", target: "CSN 306", direction: "right-0.2, up-1.3, right-4.2"},
-            { source: "CSE 103", target: "CSE 104", direction: "down-0.4"},
+            { source: "CSN 205", target: "CSN 306", direction: "right-0.2, up-1.3, right-3.2"},
+            { source: "CSE 103", target: "CSE 104", direction: "down-0.2"},
             { source: "CSE 103", target: "CSN 302", direction: "down-0.2, right-1.4"},
             { source: "CSE 206", target: "CSE 302", direction: "right-0.1, up-1.4"},
             { source: "CSE 104", target: "CSE 201", direction: "right-0.2, up-1.4"},
