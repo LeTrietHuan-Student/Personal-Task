@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>D3.js Flowchart with Tooltips</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      .node rect {
+        fill: #cce5ff;
+        stroke: #3399ff;
+        stroke-width: 2;
+        rx: 10;
+        ry: 10;
+      }
+
+      .course-general-education-required { fill: #FFB700!important; stroke: #FFB700!important; }
+      .course-general-education-elective { fill: #B78600!important; stroke: #B78600!important; }
+      .course-specialized-required { fill: #91C98D!important; stroke: #91C98D!important; }
+      .course-specialized-elective { fill: #009FE3!important; stroke: #009FE3!important; }
+      .course-capstone-project { fill: #78B0A0!important; stroke: #78B0A0!important; }
+
+      .node text {
+        font-size: 14px;
+        fill: #000;
+      }
+
+      .link {
+        fill: none;
+        stroke: #333;
+        stroke-width: 2px;
+        marker-end: url(#arrow);
+        /* opacity: 0.5; */
+        /* stroke-opacity: 0.5; */
+      }
+
+      .tooltip {
+        position: absolute;
+        background-color: #fff;
+        border: 1px solid #333;
+        padding: 5px 10px;
+        font-size: 13px;
+        pointer-events: none;
+        border-radius: 4px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+      svg{   
+        display: flex; 
+        background-color: rgb(250, 250, 250);
+      }
+      .change-button{
+        width: 50px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: red;
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        line-height: 30px;
+      }
+      .year rect {
+        fill: #DFDFDF;
+        stroke: #DFDFDF;
+      }
+
+      .year text {
+        font-size: 14px;
+        fill: #000;
+      }
+      
+    </style>
+  </head>
+  <body>
+      <div id="change" class="change-button">change</div>
+      <svg id="mySvg"></svg>
+      <div id="tooltip" class="tooltip" style="display: none"></div>
+
+    <script>
+      // name program / num of year
+      const program = ["cndc23", "4"];
+      let isMobile = true;
+
+      const svg = d3.select("svg");
+      const tooltip = d3.select("#tooltip");
+      document.getElementById("change").addEventListener("click", renderChart);
+      
+      // set change and draw
+      function renderChart() {
+        svg.selectAll("*").remove(); 
+        if(isMobile) isMobile = false;
+        else isMobile = true;
+        draw();
+      }
+
+      const svgElement = document.getElementById("mySvg");
+     
+      const x_start = 150;
+      const y_start = 100;
+      const gap_col = 170;
+      const gap_row = 130;
+      const width = 80;
+      const height = 40;
+      
+      function remapDirection(direction) {
+        const map = { right: 'down', down: 'right', left: 'up', up: 'left' };
+        return direction
+          .split(',')
+          .map(part => {
+            const [dir, val] = part.trim().split('-');
+            const newDir = map[dir] || dir;
+            return val ? `${newDir}-${val}` : newDir;
+          })
+          .join(', ');
+      }
+      renderChart();
+      
+      // draw all data
+      function draw(){
+        if (isMobile) {
+          svgElement.style.width = "1500px";
+          svgElement.style.height = program[1] === "4" ? "1700px" : "2100px";
+          svgElement.style.marginLeft = "auto";
+          svgElement.style.marginRight = "auto";
+
+        } else {
+          svgElement.style.width = program[1] === "4" ? "2300px" : "2800px";
+          svgElement.style.height = "1200px";
+        }
+        let x_move;
+        let y_move;
+        // Define arrowhead marker
+        svg
+          .append("defs")
+          .append("marker")
+          .attr("id", "arrow")
+          .attr("viewBox", "0 -5 10 10")
+          .attr("refX", 10)
+          .attr("refY", 0)
+          .attr("markerWidth", 5)
+          .attr("markerHeight", 5)
+          .attr("orient", "auto")
+          .append("path")
+          .attr("d", "M0,-5L10,0L0,5")
+          .attr("fill", "#333");
+          
+
+
+        const CourseGroup = Object.freeze({
+          GENED: 'general-education-required',
+          ELEC: 'general-education-elective',
+          SPEC: 'specialized-required',
+          SPEC_ELEC: 'specialized-elective',
+          CAPSTONE: 'capstone-project'
+        });
+        // Node data
+        x_move = isMobile ? x_start :  x_start - gap_col;
+        y_move = isMobile ? y_start - gap_col :  y_start;
+
+        let nodes;
+        let links;
+
+        //swe 18
+        if(program[0] == "swe18"){
+          nodes = [];
+          links = [];
+        }
+
+        //swe 21
+        else if(program[0] == "swe21"){
+          nodes = [];
+          links = [];
+        }
+
+        //swe 23
+        else if(program[0] == "swe23"){
+          nodes = [
+            // Year 1 Q1
+            { id: "POLS 133", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "LAWS 122", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "ELEC 1.4", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC },
+            { id: "MATH 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+
+            // Year 1 Q2
+            { id: "POLS 134", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "MATH 111", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "ELEC 1.6", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC },
+            { id: "CSE 106", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 100", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 1 Q3
+            { id: "POLS 135", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "MATH 112", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "ELEC 1.5", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q1
+            { id: "POLS 132", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "MATH 113", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 204", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 104", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q2
+            { id: "POLS 136", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "MATH 122", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 201", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 203", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q3
+            { id: "ELEC 1.2", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "", group: CourseGroup.ELEC },
+            { id: "STAT 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSW 303", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 206", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q1
+            { id: "PHYS 101", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSW 307", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 301", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSW 304", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q2
+            { id: "PHYS 102", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 202", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSW 309", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSW 306", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q3
+            { id: "ELEC 1.3", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "", group: CourseGroup.ELEC },
+            { id: "ELEC 1.3", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC },
+            { id: "CSW 315", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 302", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q4
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSW 400", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 4 Q1
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "ELEC 2.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC_ELEC },
+            { id: "CSW 406", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSW 405", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSW 480", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
+
+            // Year 4 Q2
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "ELEC 2.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC_ELEC },
+            { id: "ELEC 2.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC_ELEC },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSW 481", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
+
+            // Year 4 Q3
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "ELEC 2.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC_ELEC },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSW 482", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
+          ];
+          links = [
+            // { source: "Step 4", target: "Step 1", direction: "down-0.2,left-0.3" }, // right = down, up=left
+            { source: "MATH 103", target: "CSE 106", direction: "right" },
+            { source: "MATH 103", target: "STAT 101", direction: "up-0.3, right-4.4" },
+            { source: "MATH 111", target: "MATH 112", direction: "right" },
+            { source: "CSE 100", target: "CSE 103", direction: "right" },
+            { source: "CSE 100", target: "CSE 204", direction: "up-0.1,right-0.1, up-0.3" },
+            { source: "CSE 100", target: "CSE 206", direction: "down-0.1,right-3.4" },
+            { source: "CSE 106", target: "CSW 315", direction: "up-0.2, right-6.4" },
+            { source: "MATH 112", target: "MATH 113", direction: "right" },
+            { source: "CSE 103", target: "CSE 104", direction: "right" },
+            { source: "MATH 113", target: "MATH 122", direction: "right" },
+            { source: "CSE 104", target: "CSE 201", direction: "up-0.1,right-0.1,up-0.3" },
+            { source: "CSE 104", target: "CSE 203", direction: "right" },
+            { source: "CSE 201", target: "CSW 303", direction: "right" },
+            { source: "CSE 201", target: "CSE 301", direction: "down-0.2, right-1.4" },
+            { source: "CSE 201", target: "CSW 304", direction: "down-0.2, right-1.4" },
+            { source: "CSE 201", target: "CSE 202", direction: "up-1.1, right-2.4" },
+            { source: "CSE 201", target: "CSW 315", direction: "up-1.1, right-3.4" },
+            { source: "CSW 303", target: "CSW 307", direction: "up-0.1,right-0.4" },
+            { source: "CSW 303", target: "CSW 309", direction: "up-0.1,right-1.4" },
+            { source: "CSW 303", target: "CSW 405", direction: "up-0.1, right-4.4" },
+            { source: "CSW 303", target: "CSW 406", direction: "up-0.1, right-4.4" },
+            { source: "CSE 206", target: "CSE 302", direction: "up-0.1, right-2.4" },
+            { source: "PHYS 101", target: "PHYS 102", direction: "right" },
+            { source: "CSW 304", target: "CSW 306", direction: "right" },
+            { source: "CSE 301", target: "CSW 306", direction: "right-0.1, down-0.2, right-0.3" },
+            { source: "CSE 301", target: "CSW 309", direction: "right" },
+            { source: "CSW 306", target: "CSW 400", direction: "down-0.1, right-1.4" },
+            { source: "CSW 306", target: "CSW 480", direction: "down-0.1, right-2.4" },
+            { source: "CSW 309", target: "CSW 400", direction: "down-0.1, right-1.4" },
+            { source: "CSW 309", target: "CSW 480", direction: "down-0.1, right-2.4" },
+            { source: "CSW 480", target: "CSW 481", direction: "right" },
+            { source: "CSW 481", target: "CSW 482", direction: "right" },
+          ];
+        }
+
+        //cndc 18
+        else if(program[0] == "cndc18"){
+          nodes = [];
+          links = [];
+        }
+
+        //cndc 21
+        else if(program[0] == "cndc21"){
+          nodes = [
+            // Year 1 Q1
+            { id: "POLS 133", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "POLS 134", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+
+            // Year 1 Q2
+            { id: "POLS 135", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "POLS 136", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+
+            // Year 1 Q3
+            { id: "POLS 132", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "LAWS 121", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: ""},
+            { id: "CSE 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 2 Q1
+            { id: "MATH 101", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "MATH 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "CSE 102", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 204", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 2 Q2
+            { id: "MATH 102", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "CSE 106", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 203", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 2 Q3
+            { id: "MATH 201", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 201", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 205", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 206", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 3 Q1
+            { id: "MATH 202", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "PHYS 201", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "CSE 301", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 302", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 3 Q2
+            { id: "MATH 203", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "PHYS 202", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "CSE 202", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 307", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 3 Q3
+            { id: "MATH 204", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "PHYS 203", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.GENED},
+            { id: "CSE 303", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 470", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 4 Q1
+            { id: "MATH 301", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 305", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 320", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 476", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 4 Q2
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC},
+            { id: "CSE 321", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 462", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 477", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 4 Q3
+            { id: "EBS 401", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 306", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+            { id: "CSE 469", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.SPEC},
+
+            // Year 4 Q4
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 420", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.SPEC},
+
+            // Year 5 Q1
+            { id: "EBS 405", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.GENED},
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.ELEC},
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.ELEC},
+            { id: "CSE 494", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.CAPSTONE},
+
+            // Year 5 Q2
+            { id: "ELEC EBS", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: "" , group: CourseGroup.SPEC_ELEC},
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.ELEC},
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.ELEC},
+            { id: "CSE 495", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.CAPSTONE},
+
+            // Year 5 Q3
+            { id: "", x: isMobile ? x_move = x_start : x_move+=gap_col, y: isMobile ? y_move +=gap_row  : y_move = y_start, tooltip: ""},
+            { id: "ELEC", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "", group: CourseGroup.ELEC},
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" },
+            { id: "CSE 496", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move+=gap_row, tooltip: "" , group: CourseGroup.CAPSTONE},
+
+          ]
+
+          links = [
+            { source: "CSE 101", target: "CSE 102", direction: "right-0.2, up-0.4" },
+            { source: "CSE 101", target: "CSE 204", direction: "right" },
+            { source: "CSE 101", target: "CSE 206", direction: "right-0.2, down-0.4" },
+            { source: "MATH 101", target: "MATH 102", direction: "right" },
+            { source: "MATH 103", target: "CSE 106", direction: "right" },
+            { source: "MATH 103", target: "MATH 201", direction: "right-0.2, up-0.2, right-1.3" },
+            { source: "MATH 103", target: "MATH 204", direction: "right-0.2, up-0.2, right-4.3" },
+            { source: "CSE 102", target: "CSE 203", direction: "right" },
+            { source: "CSE 102", target: "CSE 201", direction: "right-0.2, down-0.2, right-1.3" },
+            { source: "CSE 102", target: "CSE 307", direction: "right-0.2, down-0.2, right-3.3" },
+            { source: "CSE 102", target: "CSE 306", direction: "right-0.2, down-0.2, right-7.3" },
+            { source: "CSE 204", target: "CSE 205", direction: "right" },
+            { source: "CSE 204", target: "CSE 470", direction: "right-0.2, down-0.2, right-4.3" },
+            { source: "CSE 204", target: "CSE 476", direction: "right-0.2, down-0.2, right-5.3" },
+            { source: "CSE 204", target: "CSE 477", direction: "right-0.2, down-0.2, right-6.3" },
+            { source: "CSE 204", target: "CSE 469", direction: "right-0.2, down-0.2, right-7.3" },
+            { source: "CSE 204", target: "CSE 306", direction: "right-0.2, down-0.2, right-7.3" },
+            { source: "MATH 102", target: "MATH 201", direction: "right" },
+            { source: "MATH 102", target: "MATH 204", direction: "right-0.2, down-0.1, right-3.0, up-0.1" },
+            { source: "CSE 106", target: "CSE 301", direction: "right-1.2, down-0.3, right-0.2" },
+            { source: "CSE 106", target: "CSE 202", direction: "right-1.2, down-0.3, right-1.2" },
+            { source: "CSE 203", target: "CSE 305", direction: "right-0.2, down-0.1, right-4.2" },
+            { source: "MATH 201", target: "MATH 202", direction: "right" },
+            { source: "CSE 201", target: "CSE 303", direction: "up-0.2, right-2.4" },
+            { source: "CSE 205", target: "CSE 320", direction: "right-1.0, down-0.1, right-2.4" },
+            { source: "CSE 205", target: "CSE 462", direction: "right-1.0, down-0.1, right-3.4" },
+            { source: "CSE 206", target: "CSE 302", direction: "right" },
+            { source: "MATH 202", target: "MATH 203", direction: "right" },
+            { source: "MATH 202", target: "MATH 301", direction: "right-0.2, down-0.3, right-2.2" },
+            { source: "PHYS 201", target: "PHYS 202", direction: "right" },
+            { source: "CSE 302", target: "CSE 470", direction: "right" },
+            { source: "CSE 302", target: "CSE 476", direction: "right-0.2, down-0.1, right-2.2" },
+            { source: "CSE 302", target: "CSE 477", direction: "right-0.2, down-0.1, right-1.2" },
+            { source: "PHYS 202", target: "PHYS 203", direction: "right" },
+            { source: "CSE 202", target: "CSE 303", direction: "right" },
+            { source: "CSE 320", target: "CSE 321", direction: "right-0.2, up-0.4" },
+            { source: "CSE 321", target: "CSE 420", direction: "right" },
+            { source: "CSE 321", target: "CSE 494", direction: "right-1.2, down-0.4" },
+            { source: "EBS 401", target: "ELEC EBS", direction: "down-0.2, right-2.4" },
+            { source: "CSE 420", target: "CSE 494", direction: "down-0.2, right-0.4" },
+            { source: "EBS 405", target: "ELEC EBS", direction: "right" },
+            { source: "CSE 494", target: "CSE 495", direction: "right" },
+            { source: "CSE 495", target: "CSE 496", direction: "right" },
+          ];
+        }
+
+        //cndc 23
+        else if(program[0] == "cndc23"){
+          nodes = [
+            // Year 1 Q1
+            { id: "POLS 133", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "LAW 122", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "MATH 111", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "GEN 1.2.1", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+
+            // Year 1 Q2
+            { id: "POLS 134", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "MATH 112", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "MATH 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSE 100", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 1 Q3
+            { id: "POLS 135", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "STAT 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSE 106", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: ""},
+            { id: "CSE 204", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q1
+            { id: "POLS 132", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "GEN 1.4", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "GEN 1.2.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: ""},
+            { id: "CSN 205", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q2
+            { id: "POLS 136", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "GEN 1.5.2", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "COMS 101", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSE 103", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 2 Q3
+            { id: "PHYS 100", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "GEN 1.6", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: ""},
+            { id: "CSE 206", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 104", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q1
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "CSE 302", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 201", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 301", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 302", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q2
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "CSE 301", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSE 203", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 305", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 303", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 3 Q3
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "CSN 304", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 306", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 304", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 340", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            
+
+            //year 3 Q4
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "CSN 341", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 4 Q1
+            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSN 435", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 495", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 401", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 4 Q2
+            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSN 420", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 421", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 422", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+            // Year 4 Q3
+            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
+            { id: "CSN 490", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 491", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 492", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+
+          ];
+          links = [links =
+            // { source: "Step 4", target: "Step 1", direction: "down-0.2,left-0.3" }, // right = down, up=left
+            { source: "MATH 111", target: "MATH 112", direction: "up-0.3,right" },
+            { source: "MATH 112", target: "STAT 101", direction: "right" },
+            { source: "MATH 103", target: "CSE 106", direction: "right" },
+            { source: "CSE 100", target: "CSE 206", direction: "right-0.2,up-0.2, right-3.2" },
+            { source: "CSE 100", target: "CSE 103", direction: "right"},
+            { source: "CSE 100", target: "CSE 204", direction: "right-0.2, down-0.4"},
+            { source: "STAT 101", target: "GEN 1.4", direction: "right" },
+            { source: "CSE 204", target: "CSN 205", direction: "right"},
+            { source: "CSE 204", target: "CSN 302", direction: "down-0.1, right-3.4"},
+            { source: "CSE 204", target: "CSN 303", direction: "down-0.1, right-4.4"},
+            { source: "CSE 204", target: "CSN 305", direction: "down-0.1, right-4.2, up-1.1"},
+            { source: "CSN 205", target: "CSN 301", direction: "right-0.2, up-1.3, right-2.2"},
+            { source: "CSN 205", target: "CSN 306", direction: "right-0.2, up-1.3, right-4.2"},
+            { source: "CSE 103", target: "CSE 104", direction: "down-0.4"},
+            { source: "CSE 103", target: "CSN 302", direction: "down-0.2, right-1.4"},
+            { source: "CSE 206", target: "CSE 302", direction: "right-0.1, up-1.4"},
+            { source: "CSE 104", target: "CSE 201", direction: "right-0.2, up-1.4"},
+            { source: "CSE 302", target: "CSN 306", direction: "down-0.2, right-1.4"},
+            { source: "CSE 201", target: "CSE 203", direction: "right"},
+            { source: "CSE 201", target: "CSE 301", direction: "right-0.2, up-1.1, right-0.2"},
+            { source: "CSE 201", target: "CSN 304", direction: "right-0.2, up-1.1, right-1.2"},
+            { source: "CSN 301", target: "CSN 340", direction: "right-0.1, down-0.1, right-1.2"},
+            { source: "CSN 302", target: "CSN 340", direction: "right-0.1, up-0.1, right-1.0, down-0.1"},
+
+ 
+            // { source: "CSE 106", target: "CSW 315", direction: "up-0.2, right-6.4" },
+            // { source: "MATH 112", target: "MATH 113", direction: "right" },
+            // { source: "CSE 103", target: "CSE 104", direction: "right" },
+            // { source: "MATH 113", target: "MATH 122", direction: "right" },
+            // { source: "CSE 104", target: "CSE 201", direction: "up-0.1,right-0.1,up-0.3" },
+            // { source: "CSE 104", target: "CSE 203", direction: "right" },
+            // { source: "CSE 201", target: "CSW 303", direction: "right" },
+            // { source: "CSE 201", target: "CSE 301", direction: "down-0.2, right-1.4" },
+            // { source: "CSE 201", target: "CSW 304", direction: "down-0.2, right-1.4" },
+            // { source: "CSE 201", target: "CSE 202", direction: "up-1.1, right-2.4" },
+            // { source: "CSE 201", target: "CSW 315", direction: "up-1.1, right-3.4" },
+            // { source: "CSW 303", target: "CSW 307", direction: "up-0.1,right-0.4" },
+            // { source: "CSW 303", target: "CSW 309", direction: "up-0.1,right-1.4" },
+            // { source: "CSW 303", target: "CSW 405", direction: "up-0.1, right-4.4" },
+            // { source: "CSW 303", target: "CSW 406", direction: "up-0.1, right-4.4" },
+            // { source: "CSE 206", target: "CSE 302", direction: "up-0.1, right-2.4" },
+            // { source: "PHYS 101", target: "PHYS 102", direction: "right" },
+            // { source: "CSW 304", target: "CSW 306", direction: "right" },
+            // { source: "CSE 301", target: "CSW 306", direction: "right-0.1, down-0.2, right-0.3" },
+            // { source: "CSE 301", target: "CSW 309", direction: "right" },
+            // { source: "CSW 306", target: "CSW 400", direction: "down-0.1, right-1.4" },
+            // { source: "CSW 306", target: "CSW 480", direction: "down-0.1, right-2.4" },
+            // { source: "CSW 309", target: "CSW 400", direction: "down-0.1, right-1.4" },
+            // { source: "CSW 309", target: "CSW 480", direction: "down-0.1, right-2.4" },
+            // { source: "CSW 480", target: "CSW 481", direction: "right" },
+            // { source: "CSW 481", target: "CSW 482", direction: "right" },
+          ];
+        }
+
+
+        //Draw years
+          const yearExpand = 50;
+          const yearWidth = isMobile ? height/2 :  width*3 + (gap_col-width)*2;
+          const yearHeight = isMobile ? width*3 + (gap_col-width)*2 : height/2;
+          let years;
+          let quarters;
+
+          if(program[1] == "5"){
+            const fiveYears = [
+              {id: "Year 1", x: x_move = isMobile ? 210: 320 - yearExpand/2,y: y_move = isMobile ? 50 - yearExpand/2: 10},
+              {id: "Year 2", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 : 10},
+              {id: "Year 3", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 : 10},
+              {id: "Year 4", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3 + gap_col/2,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 + gap_row/2: 10},
+              {id: "Year 5", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3 + gap_col/2,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 + gap_row/2 : 10},
+            ]
+            const fiveYquarters = [
+              {id: "Q1", x: x_move = x_start,y: y_move=50},
+              {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q4", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+            ]
+            years = fiveYears;
+            quarters = fiveYquarters;
+          }
+          else{
+              const fourYears = [
+                {id: "Year 1", x: x_move = isMobile ? 210: 320 - yearExpand/2,y: y_move = isMobile ? 50 - yearExpand/2: 10},
+                {id: "Year 2", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 : 10},
+                {id: "Year 3", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3 + gap_col/2,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 + gap_row/2: 10},
+                {id: "Year 4", x: x_move+= isMobile ? 0 : width*3 +(gap_col-width)*3 + gap_col/2,y: y_move = isMobile ? y_move + height*3 +(gap_row-height)*3 + gap_row/2 : 10},
+              ]
+              const fourYquarters = [
+                {id: "Q1", x: x_move = x_start,y: y_move=50},
+                {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q4", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q1", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q2", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+                {id: "Q3", x: isMobile ? x_move : x_move += gap_col, y: isMobile ? y_move+=gap_row : 50},
+              ]
+              years = fourYears;
+              quarters = fourYquarters;
+          }
+
+          const specialYear = years.length == 5 ?  ["Year 4"] : ["Year 3"]; 
+
+          //Draw year
+          const yearGroup = svg
+            .selectAll(".year")
+            .data(years)
+            .enter()
+            .append("g")
+            .attr("class", "year")
+            .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+
+          
+          yearGroup
+            .append("rect")
+            .attr("width", (d) => (isMobile ? yearWidth : specialYear.includes(d.id) ? yearWidth + gap_col + yearExpand : yearWidth + yearExpand))
+            .attr("height", (d) => (isMobile && specialYear.includes(d.id) ? yearHeight - 3 * height + gap_row + yearExpand : isMobile ? yearHeight - 3 * height + yearExpand : yearHeight))
+            .attr("x", (d) => {
+              const baseWidth = isMobile ? yearHeight : yearWidth;
+              const specialWidth = baseWidth + (isMobile && specialYear.includes(d.id) ? 0 : gap_col);
+              return specialYear.includes(d.id) ? -specialWidth / 2 : -baseWidth / 2;
+            })
+            .attr("y", (d) => (isMobile && specialYear.includes(d.id) ? -yearWidth / 2 - 60 : isMobile ? -yearWidth / 2 : -yearHeight / 2));
+
+          yearGroup
+            .append("text")
+            .attr("x", (d) => (isMobile ? -yearHeight / 2  - gap_row  - yearExpand/2: yearExpand/2))
+            .attr("y", 0)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .attr("transform", (d) => (isMobile ? `rotate(-90, ${-yearHeight / 2}, ${-yearWidth / 2})` : null))
+            .text((d) => d.id);
+
+          // Draw quarter
+          const quaterGroup = svg
+            .selectAll(".quarters")
+            .data(quarters)
+            .enter()
+            .append("g")
+            .attr("class", "quarters")
+            .attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+          
+          quaterGroup
+            .append("text")
+            .attr("x", (d) => (isMobile ?  x_start - gap_col*1.4: -width/2 + yearExpand/2+height/4))
+            .attr("y", (d) => (isMobile ? y_start - gap_col/2 :-height/2 + height/2))
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .text((d) => d.id);
+        
+        // Draw nodes
+        const filteredNodes = nodes.filter((node) => node.id.trim() !== "");
+        const nodeGroup = svg
+          .selectAll(".node")
+          .data(filteredNodes)
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
+          .on("mouseover", function (event, d) {
+            tooltip
+              .style("display", "block")
+              .html(`<strong>${d.id}</strong><br>${d.tooltip}`);
+          })
+          .on("mousemove", function (event) {
+            tooltip
+              .style("left", event.pageX + 10 + "px")
+              .style("top", event.pageY - 20 + "px");
+          })
+          .on("mouseout", function () {
+            tooltip.style("display", "none");
+          });
+
+        nodeGroup
+          .append("rect")
+          .attr("width", width)
+          .attr("height", height)
+          .attr("x", -width/2)
+          .attr("y", -height/2)
+          .attr("class", (d) => `course-${d.group}`)
+
+        nodeGroup
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("alignment-baseline", "middle")
+          .text((d) => d.id);
+        
+        // Draw links
+        links.forEach((link) => {
+          const source = nodes.find((n) => n.id === link.source);
+          const target = nodes.find((n) => n.id === link.target);
+          const direction = isMobile ? remapDirection(link.direction) : link.direction;
+
+          // Split the string and process each element
+          const groups = direction.split(",").map(item => {
+            const trimmed = item.trim();
+            const [dir, value] = trimmed.split("-");
+            
+            // Get the digits from value, if there are no digits it will be []
+            const digits = value ? value.split("").filter(char => !isNaN(char) && char !== ".").map(Number) : [];
+            
+            // Assign value 0 if no number
+            const firstDigit = digits[0] || 0;
+            const secondDigit = digits[1] || 0;
+            
+            return { dir, firstDigit, secondDigit };
+          });
+
+          // Calculate the route
+          let x = source.x;
+          let y = source.y;
+          
+          if (groups[0].dir === "right") x += width/2;
+          else if (groups[0].dir === "up") y -= + height/2;
+          else if (groups[0].dir === "down") y += height/2; 
+          else if (groups[0].dir === "left") x -=  width/2;
+          let path = `M${x},${y}`; 
+
+          let flag = true;
+          function first(){
+            if(!flag) return;
+            if (groups[1].dir === "right") x += width/2;
+            else if (groups[1].dir === "up") y -= + height/2;
+            else if (groups[1].dir === "down") y += height/2; 
+            else if (groups[1].dir === "left") x -=  width/2;
+            flag=false;
+          }
+            
+          let t = `L${x},${y}`;
+          //divide gap into 4 parts
+          const gap_c = (gap_col - width) / 4;
+          const gap_r = (gap_row - height) / 4;
+
+
+          groups.forEach(group => {
+            const { dir, firstDigit, secondDigit } = group;
+            if (dir === "right") x += (gap_col) * firstDigit + gap_c * secondDigit ;
+            else if (dir === "up") y -= (gap_row) * firstDigit + gap_r * secondDigit ;
+            else if (dir === "down") y += (gap_row) * firstDigit + gap_r * secondDigit ; 
+            else if (dir === "left") x -= (gap_col) * firstDigit + gap_c * secondDigit ;
+            path += ` L${x},${y}`; 
+            if(groups.length>1) first();
+          });
+
+
+          if (y < target.y - height/2) path += `L${target.x},${y}` + `L${target.x},${target.y - height/2}`; //down
+          else if (y > target.y + height/2) path += `L${target.x},${y}` + `L${target.x},${target.y + height/2}`; //up
+          else if (x < target.x - width/2) path += `L${x},${target.y}` + `L${target.x - width/2},${target.y}`; //right
+          else if (x > target.x + width/2) path += `L${x},${target.y}` + `L${target.x + width/2},${target.y}`; //lefft
+          
+          svg
+            .append("path")
+            .attr("class", "link")
+            .attr(
+              "d", path
+            );
+        });
+      }
+    </script>
+  </body>
+</html>
