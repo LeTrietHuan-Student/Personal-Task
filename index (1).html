@@ -518,29 +518,31 @@
             { id: "CSN 306", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
             { id: "CSN 304", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
             { id: "CSN 340", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            
 
             //year 3 Q4
             { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
             { id: "CSN 341", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
 
             // Year 4 Q1
-            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
-            { id: "CSN 435", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            { id: "CSN 495", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "Elective", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },            
             { id: "CSN 401", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "Spec Elective", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "" },
+            { id: "CSN 494", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
 
             // Year 4 Q2
-            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
-            { id: "CSN 420", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            { id: "CSN 421", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            { id: "CSN 422", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "Elective", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },            
+            { id: "CSW 435", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "Spec Elective", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "" },
+            { id: "CSN 495", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
 
             // Year 4 Q3
-            { id: "Elective", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: "", group: CourseGroup.GENED },
-            { id: "CSN 490", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            { id: "CSN 491", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
-            { id: "CSN 492", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "", x: isMobile ? x_move = x_start : x_move += gap_col, y: isMobile ? y_move += gap_row : y_move = y_start, tooltip: ""},
+            { id: "Elective", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.GENED },            
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },            
+            { id: "", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.SPEC },
+            { id: "CSN 496", x: isMobile ? x_move += gap_col : x_move, y: isMobile ? y_move : y_move += gap_row, tooltip: "", group: CourseGroup.CAPSTONE },
 
           ];
           links = [links =
@@ -568,6 +570,19 @@
             { source: "CSE 201", target: "CSN 304", direction: "right-0.2, up-1.1, right-1.2"},
             { source: "CSN 301", target: "CSN 340", direction: "right-0.1, down-0.1, right-1.2"},
             { source: "CSN 302", target: "CSN 340", direction: "right-0.1, up-0.1, right-1.0, down-0.1"},
+            { source: "CSN 340", target: "CSN 341", direction: "down-0.1,right-0.3"},
+            { source: "CSN 303", target: "CSN 401", direction: "up-0.1,right-1.5, up-1.3"},
+            { source: "CSN 341", target: "CSN 494", direction: "right-0.1,down-2.4"},
+            { source: "CSN 205", target: "CSN 404", direction: "down-0.1, right-5, up-2.1"},
+            { source: "CSN 205", target: "CSN 405", direction: "down-0.5, right-5, up-0.5"},
+            { source: "CSN 494", target: "CSN 495", direction: "right"},
+            { source: "CSN 495", target: "CSN 496s", direction: "right"},
+
+
+
+
+
+
 
  
             // { source: "CSE 106", target: "CSW 315", direction: "up-0.2, right-6.4" },
